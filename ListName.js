@@ -10,6 +10,7 @@ function ListName() {
   
   useEffect(() => {
     fetch('http://localhost:3001/listnames')
+    
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok ' + response.statusText);
@@ -53,7 +54,7 @@ function ListName() {
 
 
   const deleteName = (nameToDelete) => {
-    fetch('http://localhost:3001/deleteName', {
+    fetch('http://localhost:3001/deleteName/', {
       method: 'DELETE',
       body: JSON.stringify({
         name: nameToDelete,
