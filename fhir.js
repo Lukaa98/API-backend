@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Box } from '@mui/material';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+
 import {
   Table,
   TableBody,
@@ -8,6 +11,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Alert
 } from '@mui/material';
 
 function Fhir() {
@@ -16,13 +20,26 @@ function Fhir() {
   const [patientInfo, setPatientInfo] = useState([]);
 
   const [currentFamilyName, setCurrentFamilyName] = useState("");
-const [currentGivenName, setCurrentGivenName] = useState("");
-const [newFamilyName, setNewFamilyName] = useState("");
-const [newGivenName, setNewGivenName] = useState("");
+  const [currentGivenName, setCurrentGivenName] = useState("");
+  const [newFamilyName, setNewFamilyName] = useState("");
+  const [newGivenName, setNewGivenName] = useState("");
 
-const [posts, setPosts] = useState([])
+  const [posts, setPosts] = useState([])
+  const [addName, setAddName] = useState(null);
+  const [deleteMessage, setDeleteMessage] = useState('');
+  const [postToDelete, setPostToDelete] = useState(null);
 
 
+
+
+
+  const [userId, setUserId] = useState("");
+  const [id, setId] = useState("");
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+
+
+  const [idToDelete, setIdToDelete] = useState('');
 
 
 
@@ -43,7 +60,7 @@ useEffect(() => {
           return `${givenNames} ${nameRecord.family || ''}`.trim();
         }).join(', '); // Join multiple names with comma, if any.
       });
-      console.log(names)
+      // console.log(names)
 
       setDisplayNames(names);
     });
@@ -118,6 +135,66 @@ useEffect (() => {
 }, [] )
 
 
+
+
+const handleAddName = () => {
+  // useEffect (() => {
+    fetch("https://jsonplaceholder.typicode.com/posts" ,
+  {
+    method: "POST",
+    body: JSON.stringify({
+      "userId": 123,
+      "id": 123,
+      "title": "title",
+      "body": "body"
+
+        }),
+    headers: {
+      'Content-type': 'application/json',
+    }
+  })
+  
+  .then((response) => response.json())
+  .then((addName) => 
+  {
+    setAddName(addName)
+    console.log(addName)
+
+
+  })
+
+//   .catch((err) => {
+//     console.log("error" ,err.message);
+//  });
+
+// }, [] )
+
+}
+
+
+const deletePost = (id) => {
+  const post = posts.find(post => post.id === parseInt(id));
+  setPostToDelete(post); // Save the post content
+
+  fetch(`https://jsonplaceholder.typicode.com/posts/${id}`, {
+    method: 'DELETE',
+  })
+    .then((response) => {
+      setDeleteMessage(`Post with ID ${id} has been deleted.`);
+      setPosts(posts.filter(post => post.id !== parseInt(id)));
+      return response.json();
+    })
+    .then((data) => {
+      console.log('Deleted:', data);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      setDeleteMessage(`Failed to delete post with ID ${id}.`);
+    });
+};
+
+
+
   return (
     <Box>
 
@@ -176,6 +253,52 @@ useEffect (() => {
                       </Table>
                   </TableContainer>
 
+
+                  <Box  sx={{marginTop: 10}}>
+        <TextField  label="userid" variant="outlined" value={userId} 
+         onChange={(e) => setUserId(e.target.value)}/>
+         <TextField  label="id" variant="outlined" value={id} 
+         onChange={(e) => setId(e.target.value)}/>
+         <TextField  label="title" variant="outlined" value={title} 
+         onChange={(e) => setTitle(e.target.value)}/>
+         <TextField  label="body" variant="outlined" value={body} 
+         onChange={(e) => setBody(e.target.value)}/>
+       <Button variant="contained" color="primary" 
+        onClick={handleAddName}> Add Name
+      </Button>
+    </Box>
+
+
+
+    <Box sx={{ marginTop: 10 }}>
+        <TextField
+          label="Enter ID to delete"
+          variant="outlined"
+          value={idToDelete}
+          onChange={(e) => setIdToDelete(e.target.value)}
+        />
+        <Button variant="contained" color="primary" onClick={() => deletePost(idToDelete)}>
+          Delete Post
+        </Button>
+
+        {/* Display delete message */}
+        {deleteMessage && (
+          <Alert severity="info" sx={{ marginTop: 2 }}>
+            {deleteMessage}
+          </Alert>
+        )}
+
+        {/* Display the content of the deleted post */}
+        {postToDelete && (
+          <Box sx={{ marginTop: 2 }}>
+            <strong>Deleted Post Content:</strong>
+            <div>UserID: {postToDelete.userId}</div>
+            <div>ID: {postToDelete.id}</div>
+            <div>Title: {postToDelete.title}</div>
+            <div>Body: {postToDelete.body}</div>
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 }
